@@ -78,3 +78,4 @@ app.post("/", (req, res) => {
 });
 
 app.listen(80);
+console.log("-- JSON-RPC JS server running --")
