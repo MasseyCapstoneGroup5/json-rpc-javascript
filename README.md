@@ -1,16 +1,27 @@
 # json-rpc-js-sdk
 
-
 ## Setup
 
-Install
+Clone repository
 
-npm install express
+    git clone https://github.com/MasseyCapstoneGroup5/json-rpc-js-sdk.git
+
+Enter Project directory
+
+    cd json-rpc-js-sdk
+
+Install packages with npm
+
+    npm install
+
+Run server
+
+    node index.js
 
 
 ## Example usage
 
-Post  http://localhost
+Post to http://localhost with JSON body
 
 Setup (must be run before other calls)
 
