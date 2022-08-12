@@ -42,9 +42,10 @@ server.addMethod("createAccount", async ({publicKey}) => {
 
     //Sign the transaction with the client operator private key and submit to a Hedera network
     const txResponse = await transaction.execute(client);
-
     //Request the receipt of the transaction
-    return await txResponse.getReceipt(client);
+    let receipt = await txResponse.getReceipt(client)
+
+    return receipt.accountId.toString();
 });
 
 
