@@ -58,6 +58,16 @@ server.addMethod("example", ({message}) => {
     return message;
 });
 
+server.addMethod("getAccountMemo", async ({accountId}) => {
+    // TODO: Error handling e.g. client not setup, invalid key etc.
+    //Create the account info query
+    const query = new AccountInfoQuery()
+    .setAccountId(accountId);
+    const accountInfo = await query.execute(client);
+    // Extract the memo field from account info
+    return accountInfo.accountMemo;
+});
+
 server.addMethod("updateAccount", async ({accountId, key, memo}) => {
     // TODO: Error handling e.g. client not setup, invalid key etc.
     // update the account
@@ -95,16 +105,6 @@ app.post("/", (req, res) => {
             res.sendStatus(204);
         }
     });
-});
-
-server.addMethod("getAccountMemo", async ({accountId}) => {
-    // TODO: Error handling e.g. client not setup, invalid key etc.
-    //Create the account info query
-    const query = new AccountInfoQuery()
-    .setAccountId(accountId);
-    const accountInfo = await query.execute(client);
-    // Extract the memo field from account info
-    return accountInfo.accountMemo;
 });
 
 app.listen(80);
