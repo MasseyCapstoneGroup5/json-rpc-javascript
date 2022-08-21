@@ -33,7 +33,6 @@ server.addMethod("getAccountInfo", async ({accountId}) => {
     return await query.execute(client);
 });
 
-
 server.addMethod("createAccount", async ({publicKey}) => {
     // TODO: Error handling e.g. client not setup, invalid key etc.
     //Create the transaction
@@ -59,14 +58,6 @@ server.addMethod("example", ({message}) => {
     return message;
 });
 
-server.addMethod("getAccountInfo", async ({accountId}) => {
-    // TODO: Error handling e.g. client not setup, invalid key etc.
-    //Create the account info query
-    const query = new AccountInfoQuery().setAccountId(accountId);
-    //Sign with client operator private key and submit the query to a Hedera network and return account info
-    return await query.execute(client);
-});
-
 server.addMethod("updateAccount", async ({accountId, key, memo}) => {
     // TODO: Error handling e.g. client not setup, invalid key etc.
     // update the account
@@ -84,8 +75,7 @@ server.addMethod("updateAccount", async ({accountId, key, memo}) => {
     const receipt = await txResponse.getReceipt(client);
     //Get the transaction consensus status
     const transactionStatus = receipt.status;
-    console.log("The transaction consensus status is " +transactionStatus.toString());
-    
+    //console.log("The transaction consensus status is " +transactionStatus.toString());    
 })
 
 const app = express();
@@ -105,6 +95,16 @@ app.post("/", (req, res) => {
             res.sendStatus(204);
         }
     });
+});
+
+server.addMethod("getAccountMemo", async ({accountId}) => {
+    // TODO: Error handling e.g. client not setup, invalid key etc.
+    //Create the account info query
+    const query = new AccountInfoQuery()
+    .setAccountId(accountId);
+    const accountInfo = await query.execute(client);
+    // Extract the memo field from account info
+    return accountInfo.accountMemo;
 });
 
 app.listen(80);
