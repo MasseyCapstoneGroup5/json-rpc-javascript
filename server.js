@@ -5,6 +5,7 @@ const methods = require("./methods")
 
 const server = new JSONRPCServer();
 
+// Create json-rpc server method for each method
 Object.entries(methods).forEach(([methodName, method]) => {
     // First parameter is a method name.
     // Second parameter is a method itself.
@@ -14,6 +15,16 @@ Object.entries(methods).forEach(([methodName, method]) => {
     // TODO: Error handling e.g. client not setup, invalid key etc.
     server.addMethod(methodName, method)
 });
+
+// Create one server method "call" that calls function defined in params.func and passes the other params along
+server.addMethod("call", (...args) =>{
+    let params = args[0]
+    let func = params.func
+    delete params.func;
+    // Catch-all could be added here for unimplemented functions
+    return methods[func](params)
+})
+
 
 const app = express();
 app.use(bodyParser.json());
