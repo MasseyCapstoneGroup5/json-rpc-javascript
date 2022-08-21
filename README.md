@@ -16,14 +16,14 @@ Install packages with npm
 
 Run server
 
-    node index.js
+    node server.js
 
 
 ## Example usage
 
 Post to http://localhost with JSON body
 
-Setup (must be run before other calls)
+Setup (should be run before other calls)
 
     {
         "jsonrpc": "2.0",

@@ -1,0 +1,3 @@
+exports.sdk = {
+    client: null
+};
