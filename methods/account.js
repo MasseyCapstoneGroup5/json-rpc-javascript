@@ -4,6 +4,7 @@ const {
     PublicKey,
     Hbar,
     AccountUpdateTransaction,
+    AccountDeleteTransaction,
     PrivateKey
 } = require("@hashgraph/sdk");
 const {sdk} = require("../sdk_data");
@@ -19,7 +20,8 @@ module.exports = {
         //Create the transaction
         const transaction = new AccountCreateTransaction()
             .setKey(PublicKey.fromString(publicKey))
-            .setInitialBalance(Hbar.fromTinybars(1000));
+            // opening deposit is 10 Hb which is 1000000000 Tinybars
+            .setInitialBalance(Hbar.fromTinybars(1000000000));
 
         //Sign the transaction with the client operator private key and submit to a Hedera network
         const txResponse = await transaction.execute(sdk.client);
@@ -46,4 +48,19 @@ module.exports = {
         //console.log("The transaction consensus status is " +receipt.status.toString());
         return receipt.status;
     },
+    deleteAccount: async ({accountId, accountKey, OPERATOR_ID}) => {
+        const transaction = await new AccountDeleteTransaction()
+        .setAccountId(accountId)
+        .setTransferAccountId(OPERATOR_ID)        
+        .freezeWith(sdk.client);
+        
+        //Sign the transaction with the account key
+        const signTx = await transaction.sign(PrivateKey.fromString(accountKey));
+        //Sign with the client operator private key and submit to a Hedera network
+        const txResponse = await signTx.execute(sdk.client);
+        //Request the receipt of the transaction
+        const receipt = await txResponse.getReceipt(sdk.client);
+        //Get the transaction consensus status
+        return receipt;
+    }
 };
