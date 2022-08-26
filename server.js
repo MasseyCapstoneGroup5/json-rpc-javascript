@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const {JSONRPCServer} = require("json-rpc-2.0");
 const methods = require("./methods")
+const mapping = require("./mapping");
 
 const server = new JSONRPCServer();
 
@@ -17,12 +18,15 @@ Object.entries(methods).forEach(([methodName, method]) => {
 });
 
 // Create one server method "call" that calls function defined in params.func and passes the other params along
-server.addMethod("call", (...args) =>{
+server.addMethod("call", async (...args) => {
     let params = args[0]
     let func = params.func
     delete params.func;
-    // Catch-all could be added here for unimplemented functions
-    return methods[func](params)
+    if (methods[func]) {
+        return methods[func](params)
+    }
+    // Catch-all / mapping could be added here for unimplemented functions
+    return await mapping(params)
 })
 
 
