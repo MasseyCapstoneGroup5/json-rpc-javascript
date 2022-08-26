@@ -47,10 +47,10 @@ module.exports = {
         //console.log("The transaction consensus status is " +receipt.status.toString());
         return receipt.status;
     },
-    deleteAccount: async ({accountId, accountKey, OPERATOR_ID}) => {
+    deleteAccount: async ({accountId, accountKey, recipientId}) => {
         const transaction = await new AccountDeleteTransaction()
         .setAccountId(accountId)
-        .setTransferAccountId(OPERATOR_ID)        
+        .setTransferAccountId(recipientId)        
         .freezeWith(sdk.client);
         
         //Sign the transaction with the account key
