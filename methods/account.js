@@ -20,8 +20,7 @@ module.exports = {
         //Create the transaction
         const transaction = new AccountCreateTransaction()
             .setKey(PublicKey.fromString(publicKey))
-            // opening deposit is 10 Hb which is 1000000000 Tinybars
-            .setInitialBalance(Hbar.fromTinybars(1000000000));
+            .setInitialBalance(Hbar.fromTinybars(1000));
 
         //Sign the transaction with the client operator private key and submit to a Hedera network
         const txResponse = await transaction.execute(sdk.client);
