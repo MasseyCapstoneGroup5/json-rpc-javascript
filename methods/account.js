@@ -16,11 +16,11 @@ module.exports = {
         //Sign with client operator private key and submit the query to a Hedera network and return account info
         return await query.execute(sdk.client);
     },
-    createAccount: async ({publicKey}) => {
+    createAccount: async ({publicKey, initialBalance=1000}) => {
         //Create the transaction
         const transaction = new AccountCreateTransaction()
             .setKey(PublicKey.fromString(publicKey))
-            .setInitialBalance(Hbar.fromTinybars(1000));
+            .setInitialBalance(Hbar.fromTinybars(initialBalance));
 
         //Sign the transaction with the client operator private key and submit to a Hedera network
         const txResponse = await transaction.execute(sdk.client);
