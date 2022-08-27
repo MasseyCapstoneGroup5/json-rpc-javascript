@@ -29,8 +29,29 @@ module.exports = {
 
         return receipt.accountId.toString();
     },
-    updateAccount: async ({accountId, key, memo}) => {
-        // update the account
+    updateAccountKey: async ({accountId, newPublicKey, oldPrivateKey, newPrivateKey}) => {
+        // update the key on the account
+        // Create the transaction to replace the key on the account
+        const transaction = new AccountUpdateTransaction()
+            .setAccountId(accountId)
+            .setKey(PublicKey.fromString(newPublicKey))
+            .freezeWith(sdk.client);
+            
+        //Sign the transaction with the old key and new key      
+        const signTx = await (await transaction
+            .sign(PrivateKey.fromString(oldPrivateKey)))
+            .sign(PrivateKey.fromString(newPrivateKey));
+
+        // Sign the transaction with the client operator private key and submit to a Hedera network
+        const txResponse = await signTx.execute(sdk.client);
+        //Request the receipt of the transaction
+        const receipt = await txResponse.getReceipt(sdk.client);
+        //Get the transaction consensus status
+        //console.log("The transaction consensus status is " +receipt.status.toString());
+        return receipt.status;
+    },
+    updateAccountMemo: async ({accountId, key, memo}) => {
+        // update the account memo field
         // Create the transaction to update the memo on the account
         const transaction = new AccountUpdateTransaction()
             .setAccountId(accountId)
