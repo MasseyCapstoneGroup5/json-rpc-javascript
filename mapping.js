@@ -2,29 +2,26 @@ const {sdk} = require("./sdk_data");
 
 /**
  * Very primitive catch-all mapping prototype
- * @param params (callClass, methods...)
  * @returns {Promise<*>}
+ * @param callClass
+ * @param methods An array of methods names and params to be called on the callClass
  */
-module.exports = async function (params) {
-    let callClass = params.callClass;
-    delete params.callClass;
-
+module.exports = async function ({callClass, methods}) {
     const {[callClass]: cl} = require("@hashgraph/sdk");
 
-    console.log(callClass)
-
     let currentObject = new cl();
-    for (let [method, value] of Object.entries(params)) {
-        console.log("." + method + "(" + value + ")")
-        if (value === "client") {
-            value = sdk.client
+    for (let {name, param} of methods) {
+        console.log("." + name + "(" + param + ")")
+        if (param === "client") {
+            param = sdk.client
         }
-        if (typeof currentObject[method] === 'function') {
-            currentObject = await currentObject[method](value)
-        }else if (typeof cl[method] === 'function'){
-            currentObject = cl[method](value)
+
+        if (typeof currentObject[name] === 'function') {
+            currentObject = await currentObject[name](param)
+        }else if (typeof cl[name] === 'function'){
+            currentObject = await cl[name](param)
         }else{
-            throw Error(callClass + "." + method + "() isn't a function")
+            throw Error(callClass + "." + name + "() isn't a function")
         }
 
     }
