@@ -8,6 +8,7 @@ const {
     PrivateKey
 } = require("@hashgraph/sdk");
 const {sdk} = require("../sdk_data");
+const LosslessJSON = require('lossless-json');
 
 module.exports = {
     getAccountInfo: async ({accountId}) => {
@@ -17,10 +18,11 @@ module.exports = {
         return await query.execute(sdk.client);
     },
     createAccount: async ({publicKey, initialBalance=1000}) => {
+        let losslessNum = LosslessJSON.parse('{"long":'+initialBalance+'}');
         //Create the transaction
         const transaction = new AccountCreateTransaction()
             .setKey(PublicKey.fromString(publicKey))
-            .setInitialBalance(Hbar.fromTinybars(initialBalance));
+            .setInitialBalance(Hbar.fromTinybars(losslessNum.long));        
 
         //Sign the transaction with the client operator private key and submit to a Hedera network
         const txResponse = await transaction.execute(sdk.client);
