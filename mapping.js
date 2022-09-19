@@ -18,9 +18,9 @@ module.exports = async function ({callClass, methods}) {
 
         if (typeof currentObject[name] === 'function') {
             currentObject = await currentObject[name](param)
-        }else if (typeof cl[name] === 'function'){
+        } else if (typeof cl[name] === 'function') {
             currentObject = await cl[name](param)
-        }else{
+        } else {
             throw Error(callClass + "." + name + "() isn't a function")
         }
 

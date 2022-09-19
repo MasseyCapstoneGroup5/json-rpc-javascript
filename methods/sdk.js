@@ -14,11 +14,11 @@ module.exports = {
      * @param mirrorNetworkIp (optional)
      */
     setup: ({operatorAccountId, operatorPrivateKey, nodeIp, nodeAccountId, mirrorNetworkIp}) => {
-        if (nodeIp && nodeAccountId && mirrorNetworkIp){
+        if (nodeIp && nodeAccountId && mirrorNetworkIp) {
             //Create client
             const node = {[nodeIp]: new AccountId(parseInt(nodeAccountId))};
             sdk.client = Client.forNetwork(node).setMirrorNetwork(mirrorNetworkIp);
-        }else{
+        } else {
             // Default to testnet client
             sdk.client = Client.forTestnet();
         }

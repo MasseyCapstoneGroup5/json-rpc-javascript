@@ -17,12 +17,12 @@ module.exports = {
         //Sign with client operator private key and submit the query to a Hedera network and return account info
         return await query.execute(sdk.client);
     },
-    createAccount: async ({publicKey, initialBalance=1000}) => {
-        let losslessNum = LosslessJSON.parse('{"long":'+initialBalance+'}');
+    createAccount: async ({publicKey, initialBalance = 1000}) => {
+        let losslessNum = LosslessJSON.parse('{"long":' + initialBalance + '}');
         //Create the transaction
         const transaction = new AccountCreateTransaction()
             .setKey(PublicKey.fromString(publicKey))
-            .setInitialBalance(Hbar.fromTinybars(losslessNum.long));        
+            .setInitialBalance(Hbar.fromTinybars(losslessNum.long));
 
         //Sign the transaction with the client operator private key and submit to a Hedera network
         const txResponse = await transaction.execute(sdk.client);
@@ -38,7 +38,7 @@ module.exports = {
             .setAccountId(accountId)
             .setKey(PublicKey.fromString(newPublicKey))
             .freezeWith(sdk.client);
-            
+
         //Sign the transaction with the old key and new key      
         const signTx = await (await transaction
             .sign(PrivateKey.fromString(oldPrivateKey)))
@@ -72,17 +72,15 @@ module.exports = {
     },
     deleteAccount: async ({accountId, accountKey, recipientId}) => {
         const transaction = await new AccountDeleteTransaction()
-        .setAccountId(accountId)
-        .setTransferAccountId(recipientId)        
-        .freezeWith(sdk.client);
-        
+            .setAccountId(accountId)
+            .setTransferAccountId(recipientId)
+            .freezeWith(sdk.client);
+
         //Sign the transaction with the account key
         const signTx = await transaction.sign(PrivateKey.fromString(accountKey));
         //Sign with the client operator private key and submit to a Hedera network
         const txResponse = await signTx.execute(sdk.client);
-        //Request the receipt of the transaction
-        const receipt = await txResponse.getReceipt(sdk.client);
-        //Get the transaction consensus status
-        return receipt;
+        //Request the receipt of the transaction and get consensus status
+        return await txResponse.getReceipt(sdk.client);
     }
 };
