@@ -31,6 +31,46 @@ module.exports = {
 
         return receipt.accountId.toString();
     },
+    /**
+     *
+     * @param publicKey required
+     * @param initialBalance optional
+     * @param receiverSignatureRequired optional
+     * @param maxAutomaticTokenAssociations optional
+     * @param stakedAccountId optional
+     * @param stakedNodeId optional
+     * @param declineStakingReward optional
+     * @param accountMemo optional
+     * @returns {Promise<any>}
+     */
+    createAccountAllProperties: async ({
+                                       publicKey,
+                                       initialBalance= 0,
+                                       receiverSignatureRequired,
+                                       maxAutomaticTokenAssociations,
+                                       stakedAccountId,
+                                       stakedNodeId,
+                                       declineStakingReward,
+                                       accountMemo
+                                   }) => {
+        //Create the transaction
+        const transaction = new AccountCreateTransaction()
+            .setKey(PublicKey.fromString(publicKey))
+            .setInitialBalance(Hbar.fromTinybars(initialBalance))
+            .setReceiverSignatureRequired(receiverSignatureRequired)
+            .setMaxAutomaticTokenAssociations(maxAutomaticTokenAssociations)
+            .setStakedAccountId(stakedAccountId)
+            .setDeclineStakingReward(declineStakingReward)
+            .setAccountMemo(accountMemo);
+        if(stakedNodeId !== null ){
+            transaction.setStakedNodeId(stakedNodeId)
+        }
+
+        //Sign the transaction with the client operator private key and submit to a Hedera network
+        const txResponse = await transaction.execute(sdk.client);
+        //Return the receipt of the transaction
+        return await txResponse.getReceipt(sdk.client);
+    },
     updateAccountKey: async ({accountId, newPublicKey, oldPrivateKey, newPrivateKey}) => {
         // update the key on the account
         // Create the transaction to replace the key on the account
