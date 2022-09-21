@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const {JSONRPCServer} = require("json-rpc-2.0");
+const {JSONRPCServer, createJSONRPCErrorResponse} = require("json-rpc-2.0");
 const methods = require("./methods")
 const mapping = require("./mapping");
 
@@ -29,6 +29,23 @@ server.addMethod("call", async (...args) => {
     return await mapping(params)
 })
 
+
+/**
+ * Set ErrorResponse code to error.status._code if available
+ */
+const exceptionMiddleware = async (next, request, serverParams) => {
+    try {
+        return await next(request, serverParams);
+    } catch (error) {
+        if (error.status && error.status._code) {
+            return createJSONRPCErrorResponse(request.id, error.status._code, error.message);
+        } else {
+            throw error;
+        }
+    }
+};
+// Middleware will be called in the same order they are applied
+server.applyMiddleware(exceptionMiddleware);
 
 const app = express();
 app.use(bodyParser.json());

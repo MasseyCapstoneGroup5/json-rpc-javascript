@@ -104,4 +104,29 @@ Examples with public key generation:
 If the function hasn't been added to the JSON-RPC we map directly to the Hedera SDK.
 The order of the methods in the method array is retained
 
+## Errors
+Error responses / codes follow the JSON-RPC specification e.g. Method not found 
+
+    {
+        "jsonrpc": "2.0",
+        "id": 3634,
+        "error": {
+            "code": -32601,
+            "message": "Method not found"
+        }
+    }
+
+Error messages / codes for custom hedera errors as defined
+[here](https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.proto)
+are also available in the error response.
+e.g. INVALID_ACCOUNT_ID
+
+    {
+        "jsonrpc": "2.0",
+        "id": 9463,
+        "error": {
+            "code": 15,
+            "message": "transaction * failed precheck with status INVALID_ACCOUNT_ID"
+        }
+    }
 
