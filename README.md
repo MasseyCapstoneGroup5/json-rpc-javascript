@@ -72,37 +72,45 @@ Examples with public key generation:
 #### generatePublicKey (default)
     {
         "jsonrpc": "2.0",
-        "id": 11,
+        "id": 1,
         "method": "generatePublicKey",
         "params": {
-            "privateKey": "302e020100300506032b6570042204203bf96b95ce76d47e6dc76b95df09a1228f4cb611bf4e98f8bb180dd844b3ddf8"
+            "privateKey": "302e020100300506032b6570042204208eb07a3c856397a609bc8eb20e2c77102fc0403b418ca50380a3a29f2747a796"
         }
     }
 #### generatePublicKey (using call)
     {
         "jsonrpc": "2.0",
-        "id": 34,
+        "id": 1,
         "method": "call",
         "params": {
             "func": "generatePublicKey",
-            "privateKey": "302e020100300506032b657004220420c036915d924e5b517fae86ce34d8c76005cb5099798a37a137831ff5e3dc0622 "
+            "privateKey": "302e020100300506032b6570042204208eb07a3c856397a609bc8eb20e2c77102fc0403b418ca50380a3a29f2747a796 "
         }
     }
 #### generatePublicKey (call mapping)
     {
         "jsonrpc": "2.0",
-        "id": 3422,
+        "id": 1,
         "method": "call",
         "params": {
             "callClass": "PrivateKey",
             "methods": [
-                {"name": "fromString", "param": "302e020100300506032b657004220420c036915d924e5b517fae86ce34d8c76005cb5099798a37a137831ff5e3dc0622"},
-                {"name": "toString", "param": ""}
+                {"name": "fromString", "param": "302e020100300506032b6570042204208eb07a3c856397a609bc8eb20e2c77102fc0403b418ca50380a3a29f2747a796"},
+                {"name": "publicKey"},
+                {"name": "toString"}
             ]
         }
     }
 If the function hasn't been added to the JSON-RPC we map directly to the Hedera SDK.
 The order of the methods in the method array is retained
+
+#### generatePublicKey response
+    {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "302a300506032b6570032100c1a792a2609251ab821ca6d60c9167d69119b1c94d67075bd74604d9b1d31872"
+    }
 
 ## Errors
 Error responses / codes follow the JSON-RPC specification e.g. Method not found 
