@@ -31,6 +31,15 @@ module.exports = {
 
         return receipt.accountId.toString();
     },
+    createAccountNoKey: async () => {
+        //Try to create the transaction
+        const transaction = new AccountCreateTransaction();
+        //Sign the transaction with the client operator private key and submit to a Hedera network
+        const txResponse = await transaction.execute(sdk.client);
+        //Request the receipt of the transaction
+        let receipt = await txResponse.getReceipt(sdk.client)
+        return receipt.accountId.toString();
+    },
     /**
      *
      * @param publicKey required
