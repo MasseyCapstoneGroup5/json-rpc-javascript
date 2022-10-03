@@ -17,7 +17,11 @@ module.exports = {
         //Sign with client operator private key and submit the query to a Hedera network and return account info
         return await query.execute(sdk.client);
     },
+    /**
+     * Deprecated. Use createAccountAllProperties() instead
+     */
     createAccount: async ({publicKey, initialBalance = 1000}) => {
+        console.log('Deprecated. Use createAccountAllProperties() instead');
         let losslessNum = LosslessJSON.parse('{"long":' + initialBalance + '}');
         //Create the transaction
         const transaction = new AccountCreateTransaction()
@@ -29,15 +33,6 @@ module.exports = {
         //Request the receipt of the transaction
         let receipt = await txResponse.getReceipt(sdk.client)
 
-        return receipt.accountId.toString();
-    },
-    createAccountNoKey: async () => {
-        //Try to create the transaction
-        const transaction = new AccountCreateTransaction();
-        //Sign the transaction with the client operator private key and submit to a Hedera network
-        const txResponse = await transaction.execute(sdk.client);
-        //Request the receipt of the transaction
-        let receipt = await txResponse.getReceipt(sdk.client)
         return receipt.accountId.toString();
     },
     /**
@@ -53,27 +48,26 @@ module.exports = {
      * @returns {Promise<any>}
      */
     createAccountAllProperties: async ({
-                                       publicKey,
-                                       initialBalance= 0,
-                                       receiverSignatureRequired,
-                                       maxAutomaticTokenAssociations,
-                                       stakedAccountId,
-                                       stakedNodeId,
-                                       declineStakingReward,
-                                       accountMemo
-                                   }) => {
+                                           publicKey,
+                                           initialBalance,
+                                           receiverSignatureRequired,
+                                           maxAutomaticTokenAssociations,
+                                           stakedAccountId,
+                                           stakedNodeId,
+                                           declineStakingReward,
+                                           accountMemo
+                                       }) => {
         //Create the transaction
-        const transaction = new AccountCreateTransaction()
-            .setKey(PublicKey.fromString(publicKey))
-            .setInitialBalance(Hbar.fromTinybars(initialBalance))
-            .setReceiverSignatureRequired(receiverSignatureRequired)
-            .setMaxAutomaticTokenAssociations(maxAutomaticTokenAssociations)
-            .setStakedAccountId(stakedAccountId)
-            .setDeclineStakingReward(declineStakingReward)
-            .setAccountMemo(accountMemo);
-        if(stakedNodeId !== null ){
-            transaction.setStakedNodeId(stakedNodeId)
-        }
+        const transaction = new AccountCreateTransaction();
+
+        if (publicKey !== undefined) transaction.setKey(PublicKey.fromString(publicKey))
+        if (initialBalance !== undefined) transaction.setInitialBalance(Hbar.fromTinybars(LosslessJSON.parse('{"long":' + initialBalance + '}').long))
+        if (receiverSignatureRequired !== undefined) transaction.setReceiverSignatureRequired(receiverSignatureRequired)
+        if (maxAutomaticTokenAssociations !== undefined) transaction.setMaxAutomaticTokenAssociations(maxAutomaticTokenAssociations)
+        if (stakedAccountId !== undefined) transaction.setStakedAccountId(stakedAccountId)
+        if (stakedNodeId !== undefined) transaction.setStakedNodeId(stakedNodeId)
+        if (declineStakingReward !== undefined) transaction.setDeclineStakingReward(declineStakingReward)
+        if (accountMemo !== undefined) transaction.setAccountMemo(accountMemo)
 
         //Sign the transaction with the client operator private key and submit to a Hedera network
         const txResponse = await transaction.execute(sdk.client);
@@ -88,7 +82,7 @@ module.exports = {
             .setKey(PublicKey.fromString(newPublicKey))
             .freezeWith(sdk.client);
 
-        //Sign the transaction with the old key and new key      
+        //Sign the transaction with the old key and new key
         const signTx = await (await transaction
             .sign(PrivateKey.fromString(oldPrivateKey)))
             .sign(PrivateKey.fromString(newPrivateKey));
