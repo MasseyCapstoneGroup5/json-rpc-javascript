@@ -72,7 +72,8 @@ module.exports = {
         //Sign the transaction with the client operator private key and submit to a Hedera network
         const txResponse = await transaction.execute(sdk.client);
         //Return the receipt of the transaction
-        return await txResponse.getReceipt(sdk.client);
+        let receipt =  await txResponse.getReceipt(sdk.client);
+        return receipt.accountId.toString();
     },
     updateAccountKey: async ({accountId, newPublicKey, oldPrivateKey, newPrivateKey}) => {
         // update the key on the account
