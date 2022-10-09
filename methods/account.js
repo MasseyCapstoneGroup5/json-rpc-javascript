@@ -74,14 +74,20 @@ module.exports = {
         //Return the receipt of the transaction
         return await txResponse.getReceipt(sdk.client);
     },
-    createAccountRequiresSignature: async ({publicKey, initialBalance, receiverSignatureRequired}) =>
+    createAccountRequiresSignature: async ({publicKey, privateKey, initialBalance, receiverSignatureRequired}) =>
     {
-        const txId = await new AccountCreateTransaction()
+        const transaction = new AccountCreateTransaction()
         .setKey(PublicKey.fromString(publicKey))
-        .setInitialBalance(new Hbar(initialBalance))
+        .setInitialBalance(initialBalance)
         .setReceiverSignatureRequired(receiverSignatureRequired)
-        .execute(sdk.client);
-        return txId.transactionId
+        .freezeWith(sdk.client)
+
+        //Sign the transaction with the private key
+        const signTx = await transaction
+            .sign(PrivateKey.fromString(privateKey));
+   
+         const txResponse = await signTx.execute(sdk.client);
+         return receipt = await txResponse.getReceipt(sdk.client);
     },
     updateAccountKey: async ({accountId, newPublicKey, oldPrivateKey, newPrivateKey}) => {
         // update the key on the account
