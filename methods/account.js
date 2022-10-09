@@ -45,6 +45,7 @@ module.exports = {
      * @param stakedNodeId optional
      * @param declineStakingReward optional
      * @param accountMemo optional
+     * @param privateKey optional (used for signing)
      * @returns {Promise<any>}
      */
     createAccountAllProperties: async ({
@@ -55,10 +56,11 @@ module.exports = {
                                            stakedAccountId,
                                            stakedNodeId,
                                            declineStakingReward,
-                                           accountMemo
+                                           accountMemo,
+                                           privateKey
                                        }) => {
         //Create the transaction
-        const transaction = new AccountCreateTransaction();
+        let transaction = new AccountCreateTransaction();
 
         if (publicKey !== undefined) transaction.setKey(PublicKey.fromString(publicKey))
         if (initialBalance !== undefined) transaction.setInitialBalance(Hbar.fromTinybars(LosslessJSON.parse('{"long":' + initialBalance + '}').long))
@@ -68,26 +70,15 @@ module.exports = {
         if (stakedNodeId !== undefined) transaction.setStakedNodeId(stakedNodeId)
         if (declineStakingReward !== undefined) transaction.setDeclineStakingReward(declineStakingReward)
         if (accountMemo !== undefined) transaction.setAccountMemo(accountMemo)
-
-        //Sign the transaction with the client operator private key and submit to a Hedera network
+        if (privateKey !== undefined){
+            //Sign the transaction with the private key
+            transaction.freezeWith(sdk.client)
+            transaction = await transaction.sign(PrivateKey.fromString(privateKey));
+        }
+        //Sign the transaction with the client operator private key if not already signed and submit to a Hedera network
         const txResponse = await transaction.execute(sdk.client);
         //Return the receipt of the transaction
         return await txResponse.getReceipt(sdk.client);
-    },
-    createAccountRequiresSignature: async ({publicKey, privateKey, initialBalance, receiverSignatureRequired}) =>
-    {
-        const transaction = new AccountCreateTransaction()
-        .setKey(PublicKey.fromString(publicKey))
-        .setInitialBalance(initialBalance)
-        .setReceiverSignatureRequired(receiverSignatureRequired)
-        .freezeWith(sdk.client)
-
-        //Sign the transaction with the private key
-        const signTx = await transaction
-            .sign(PrivateKey.fromString(privateKey));
-   
-         const txResponse = await signTx.execute(sdk.client);
-         return receipt = await txResponse.getReceipt(sdk.client);
     },
     updateAccountKey: async ({accountId, newPublicKey, oldPrivateKey, newPrivateKey}) => {
         // update the key on the account
