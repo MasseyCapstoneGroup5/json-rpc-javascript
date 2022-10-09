@@ -13,7 +13,7 @@ module.exports = async function ({callClass, methods}) {
     for (let {name, param} of methods) {
         console.log("." + name + "(" + param + ")")
         if (param === "client") {
-            param = sdk.client
+            param = sdk.getClient()
         }
 
         if (typeof currentObject[name] === 'function') {

@@ -11,30 +11,6 @@ const {sdk} = require("../sdk_data");
 const LosslessJSON = require('lossless-json');
 
 module.exports = {
-    getAccountInfo: async ({accountId}) => {
-        //Create the account info query
-        const query = new AccountInfoQuery().setAccountId(accountId);
-        //Sign with client operator private key and submit the query to a Hedera network and return account info
-        return await query.execute(sdk.client);
-    },
-    /**
-     * Deprecated. Use createAccountAllProperties() instead
-     */
-    createAccount: async ({publicKey, initialBalance = 1000}) => {
-        console.log('Deprecated. Use createAccountAllProperties() instead');
-        let losslessNum = LosslessJSON.parse('{"long":' + initialBalance + '}');
-        //Create the transaction
-        const transaction = new AccountCreateTransaction()
-            .setKey(PublicKey.fromString(publicKey))
-            .setInitialBalance(Hbar.fromTinybars(losslessNum.long));
-
-        //Sign the transaction with the client operator private key and submit to a Hedera network
-        const txResponse = await transaction.execute(sdk.client);
-        //Request the receipt of the transaction
-        let receipt = await txResponse.getReceipt(sdk.client)
-
-        return receipt.accountId.toString();
-    },
     /**
      *
      * @param publicKey required
@@ -48,37 +24,54 @@ module.exports = {
      * @param privateKey optional (used for signing)
      * @returns {Promise<any>}
      */
-    createAccountAllProperties: async ({
-                                           publicKey,
-                                           initialBalance,
-                                           receiverSignatureRequired,
-                                           maxAutomaticTokenAssociations,
-                                           stakedAccountId,
-                                           stakedNodeId,
-                                           declineStakingReward,
-                                           accountMemo,
-                                           privateKey
-                                       }) => {
+    createAccount: async ({
+                              publicKey,
+                              initialBalance,
+                              receiverSignatureRequired,
+                              maxAutomaticTokenAssociations,
+                              stakedAccountId,
+                              stakedNodeId,
+                              declineStakingReward,
+                              accountMemo,
+                              privateKey
+                          }) => {
         //Create the transaction
         let transaction = new AccountCreateTransaction();
 
-        if (publicKey !== undefined) transaction.setKey(PublicKey.fromString(publicKey))
-        if (initialBalance !== undefined) transaction.setInitialBalance(Hbar.fromTinybars(LosslessJSON.parse('{"long":' + initialBalance + '}').long))
-        if (receiverSignatureRequired !== undefined) transaction.setReceiverSignatureRequired(receiverSignatureRequired)
-        if (maxAutomaticTokenAssociations !== undefined) transaction.setMaxAutomaticTokenAssociations(maxAutomaticTokenAssociations)
-        if (stakedAccountId !== undefined) transaction.setStakedAccountId(stakedAccountId)
-        if (stakedNodeId !== undefined) transaction.setStakedNodeId(stakedNodeId)
-        if (declineStakingReward !== undefined) transaction.setDeclineStakingReward(declineStakingReward)
-        if (accountMemo !== undefined) transaction.setAccountMemo(accountMemo)
-        if (privateKey !== undefined){
+        if (publicKey != null) transaction.setKey(PublicKey.fromString(publicKey))
+        if (initialBalance != null) transaction.setInitialBalance(Hbar.fromTinybars(LosslessJSON.parse('{"long":' + initialBalance + '}').long))
+        if (receiverSignatureRequired != null) transaction.setReceiverSignatureRequired(receiverSignatureRequired)
+        if (maxAutomaticTokenAssociations != null) transaction.setMaxAutomaticTokenAssociations(maxAutomaticTokenAssociations)
+        if (stakedAccountId != null) transaction.setStakedAccountId(stakedAccountId)
+        if (stakedNodeId != null) transaction.setStakedNodeId(stakedNodeId)
+        if (declineStakingReward != null) transaction.setDeclineStakingReward(declineStakingReward)
+        if (accountMemo != null) transaction.setAccountMemo(accountMemo)
+        if (privateKey != null) {
             //Sign the transaction with the private key
-            transaction.freezeWith(sdk.client)
+            transaction.freezeWith(sdk.getClient())
             transaction = await transaction.sign(PrivateKey.fromString(privateKey));
         }
         //Sign the transaction with the client operator private key if not already signed and submit to a Hedera network
-        const txResponse = await transaction.execute(sdk.client);
-        //Return the receipt of the transaction
-        return await txResponse.getReceipt(sdk.client);
+        const txResponse = await transaction.execute(sdk.getClient());
+        //Get the receipt of the transaction
+        let receipt = await txResponse.getReceipt(sdk.getClient());
+        return {
+            accountId: receipt.accountId.toString(),
+            status: receipt.status.toString()
+        }
+    },
+    getAccountInfo: async ({accountId}) => {
+        //Create the account info query
+        const query = new AccountInfoQuery().setAccountId(accountId);
+        //Sign with client operator private key and submit the query to a Hedera network and return account info
+        let accountInfo = await query.execute(sdk.getClient());
+        // return only basic account info (keeps parity with java rpc)
+        return {
+            accountId: accountInfo.accountId,
+            balance: accountInfo.balance.toString(),
+            key: accountInfo.key,
+            accountMemo: accountInfo.accountMemo,
+        }
     },
     updateAccountKey: async ({accountId, newPublicKey, oldPrivateKey, newPrivateKey}) => {
         // update the key on the account
@@ -86,7 +79,7 @@ module.exports = {
         const transaction = new AccountUpdateTransaction()
             .setAccountId(accountId)
             .setKey(PublicKey.fromString(newPublicKey))
-            .freezeWith(sdk.client);
+            .freezeWith(sdk.getClient());
 
         //Sign the transaction with the old key and new key
         const signTx = await (await transaction
@@ -94,42 +87,48 @@ module.exports = {
             .sign(PrivateKey.fromString(newPrivateKey));
 
         // Sign the transaction with the client operator private key and submit to a Hedera network
-        const txResponse = await signTx.execute(sdk.client);
+        const txResponse = await signTx.execute(sdk.getClient());
         //Request the receipt of the transaction
-        const receipt = await txResponse.getReceipt(sdk.client);
+        const receipt = await txResponse.getReceipt(sdk.getClient());
         //Get the transaction consensus status
-        //console.log("The transaction consensus status is " +receipt.status.toString());
-        return receipt.status;
+        return {
+            status: receipt.status.toString()
+        };
     },
     updateAccountMemo: async ({accountId, key, memo}) => {
+
         // update the account memo field
         // Create the transaction to update the memo on the account
         const transaction = new AccountUpdateTransaction()
             .setAccountId(accountId)
             .setAccountMemo(memo)
-            .freezeWith(sdk.client);
+            .freezeWith(sdk.getClient());
 
         //Sign the transaction with key
         const signTx = await (transaction.sign(PrivateKey.fromString(key)));
         // Sign the transaction with the client operator private key and submit to a Hedera network
-        const txResponse = await signTx.execute(sdk.client);
+        const txResponse = await signTx.execute(sdk.getClient());
         //Request the receipt of the transaction
-        const receipt = await txResponse.getReceipt(sdk.client);
+        const receipt = await txResponse.getReceipt(sdk.getClient());
         //Get the transaction consensus status
-        //console.log("The transaction consensus status is " +receipt.status.toString());
-        return receipt.status;
+        return {
+            status: receipt.status.toString()
+        };
     },
     deleteAccount: async ({accountId, accountKey, recipientId}) => {
         const transaction = await new AccountDeleteTransaction()
             .setAccountId(accountId)
             .setTransferAccountId(recipientId)
-            .freezeWith(sdk.client);
+            .freezeWith(sdk.getClient());
 
         //Sign the transaction with the account key
         const signTx = await transaction.sign(PrivateKey.fromString(accountKey));
         //Sign with the client operator private key and submit to a Hedera network
-        const txResponse = await signTx.execute(sdk.client);
+        const txResponse = await signTx.execute(sdk.getClient());
         //Request the receipt of the transaction and get consensus status
-        return await txResponse.getReceipt(sdk.client);
+        const receipt = await txResponse.getReceipt(sdk.getClient());
+        return {
+            status: receipt.status.toString()
+        };
     }
 };

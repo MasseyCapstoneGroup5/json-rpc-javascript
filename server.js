@@ -12,21 +12,13 @@ Object.entries(methods).forEach(([methodName, method]) => {
     // Second parameter is a method itself.
     // A method takes JSON-RPC params and returns a result.
     // It can also return a promise of the result.
-
-    // TODO: Error handling e.g. client not setup, invalid key etc.
     server.addMethod(methodName, method)
 });
 
-// Create one server method "call" that calls function defined in params.func and passes the other params along
-server.addMethod("call", async (...args) => {
-    let params = args[0]
-    let func = params.func
-    delete params.func;
-    if (methods[func]) {
-        return methods[func](params)
-    }
-    // Catch-all / mapping could be added here for unimplemented functions
-    return await mapping(params)
+// Create mapping server method
+server.addMethod("mapping", async (...args) => {
+    // Basic mapping for unimplemented functions
+    return await mapping(args[0])
 })
 
 
@@ -38,9 +30,24 @@ const exceptionMiddleware = async (next, request, serverParams) => {
         return await next(request, serverParams);
     } catch (error) {
         if (error.status && error.status._code) {
-            return createJSONRPCErrorResponse(request.id, error.status._code, error.message);
+            return createJSONRPCErrorResponse(
+                request.id,
+                -32001,
+                "Hedera Error",
+                {
+                    status: error.status.toString(),
+                    message: error.message
+                }
+            );
         } else {
-            throw error;
+            return createJSONRPCErrorResponse(
+                request.id,
+                -32603,
+                "Internal error",
+                {
+                    message: error.message || error
+                }
+            );
         }
     }
 };
@@ -65,6 +72,6 @@ app.post("/", (req, res) => {
         }
     });
 });
-
-app.listen(80);
-console.log("-- JSON-RPC JS server running --")
+let port = 80
+app.listen(port);
+console.log("-- JSON-RPC JS server running on localhost port " + port)
