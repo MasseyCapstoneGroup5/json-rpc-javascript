@@ -14,9 +14,13 @@ Install packages with npm
 
     npm install
 
-Run server
+Run server with default port 80
 
     node server.js
+
+Run Server with custom port
+
+    node server.js 8080
 
 
 ## Example usage
