@@ -22,6 +22,7 @@ module.exports = {
      * @param declineStakingReward optional
      * @param accountMemo optional
      * @param privateKey optional (used for signing)
+     * @param autoRenewPeriod optional
      * @returns {Promise<any>}
      */
     createAccount: async ({
@@ -33,7 +34,8 @@ module.exports = {
                               stakedNodeId,
                               declineStakingReward,
                               accountMemo,
-                              privateKey
+                              privateKey,
+                              autoRenewPeriod
                           }) => {
         //Create the transaction
         let transaction = new AccountCreateTransaction();
@@ -46,6 +48,7 @@ module.exports = {
         if (stakedNodeId != null) transaction.setStakedNodeId(stakedNodeId)
         if (declineStakingReward != null) transaction.setDeclineStakingReward(declineStakingReward)
         if (accountMemo != null) transaction.setAccountMemo(accountMemo)
+        if (autoRenewPeriod != null) transaction.setAutoRenewPeriod(autoRenewPeriod)
         if (privateKey != null) {
             //Sign the transaction with the private key
             transaction.freezeWith(sdk.getClient())
@@ -71,6 +74,15 @@ module.exports = {
             balance: accountInfo.balance.toString(),
             key: accountInfo.key,
             accountMemo: accountInfo.accountMemo,
+            maxAutomaticTokenAssociations: accountInfo.maxAutomaticTokenAssociations,
+        }
+    },
+    getAutoRenewPeriod: async ({accountId}) => {
+        const query = new AccountInfoQuery().setAccountId(accountId);
+        let accountInfo = await query.execute(sdk.getClient());
+        return {
+            accountId: accountInfo.accountId,
+            autoRenewPeriod:accountInfo.autoRenewPeriod
         }
     },
     updateAccountKey: async ({accountId, newPublicKey, oldPrivateKey, newPrivateKey}) => {
