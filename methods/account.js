@@ -75,13 +75,6 @@ module.exports = {
             key: accountInfo.key,
             accountMemo: accountInfo.accountMemo,
             maxAutomaticTokenAssociations: accountInfo.maxAutomaticTokenAssociations,
-        }
-    },
-    getAutoRenewPeriod: async ({accountId}) => {
-        const query = new AccountInfoQuery().setAccountId(accountId);
-        let accountInfo = await query.execute(sdk.getClient());
-        return {
-            accountId: accountInfo.accountId,
             autoRenewPeriod:accountInfo.autoRenewPeriod
         }
     },
