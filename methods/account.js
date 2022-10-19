@@ -5,6 +5,7 @@ const {
     Hbar,
     AccountUpdateTransaction,
     AccountDeleteTransaction,
+    TransferTransaction,
     PrivateKey
 } = require("@hashgraph/sdk");
 const {sdk} = require("../sdk_data");
@@ -25,6 +26,22 @@ module.exports = {
      * @param autoRenewPeriod optional
      * @returns {Promise<any>}
      */
+    createAccountFromAlias: async ({ 
+                              operator_id, privateKey
+                          }) => {       
+        let getPvtKey = PrivateKey.fromString(JSON.parse(privateKey))
+        const public_Key = getPvtKey.publicKey
+        const aliasAccountId = public_Key.toAccountId(0, 0)
+        /*
+        * Note that no queries or transactions have taken place yet.
+        * This account "creation" process is entirely local.
+        */
+        const response = await new TransferTransaction()
+        .addHbarTransfer(operator_id, new Hbar(10).negated())
+        .addHbarTransfer(aliasAccountId, new Hbar(10))
+        .execute(sdk.getClient())        
+        return await response.getReceipt(sdk.getClient())  
+    },
     createAccount: async ({
                               publicKey,
                               initialBalance,
