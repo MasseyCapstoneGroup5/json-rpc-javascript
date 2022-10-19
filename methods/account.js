@@ -12,7 +12,22 @@ const {sdk} = require("../sdk_data");
 const LosslessJSON = require('lossless-json');
 
 module.exports = {
+    createAccountFromAlias: async ({
+                                       operator_id,
+                                       aliasAccountId,
+                                       initialBalance
+                                   }) => {
+        //Create the transfer to an alias account
+        const alias_id = JSON.parse(aliasAccountId)
+        const response = await new TransferTransaction()
+            .addHbarTransfer(operator_id, new Hbar(initialBalance).negated())
+            .addHbarTransfer(alias_id, new Hbar(initialBalance))
+            .execute(sdk.getClient())
+        return await response.getReceipt(sdk.getClient())
+    },
+
     /**
+     * Create account
      *
      * @param publicKey required
      * @param initialBalance optional
@@ -26,18 +41,6 @@ module.exports = {
      * @param autoRenewPeriod optional
      * @returns {Promise<any>}
      */
-    createAccountFromAlias: async ({ operator_id,
-                                     aliasAccountId,
-                                     initialBalance 
-                                  }) => { 
-        //Create the transfer to an alias account
-        const alias_id = JSON.parse(aliasAccountId)  
-        const response = await new TransferTransaction()
-        .addHbarTransfer(operator_id, new Hbar(initialBalance).negated())
-        .addHbarTransfer(alias_id, new Hbar(initialBalance))
-        .execute(sdk.getClient())        
-        return await response.getReceipt(sdk.getClient())  
-    },
     createAccount: async ({
                               publicKey,
                               initialBalance,
@@ -88,7 +91,7 @@ module.exports = {
             key: accountInfo.key,
             accountMemo: accountInfo.accountMemo,
             maxAutomaticTokenAssociations: accountInfo.maxAutomaticTokenAssociations,
-            autoRenewPeriod:accountInfo.autoRenewPeriod
+            autoRenewPeriod: accountInfo.autoRenewPeriod
         }
     },
     updateAccountKey: async ({accountId, newPublicKey, oldPrivateKey, newPrivateKey}) => {
